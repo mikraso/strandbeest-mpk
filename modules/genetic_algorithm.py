@@ -12,10 +12,12 @@ class geneticAlgorithm:
     def __init__(
             self,
             initscalars,
+            gene_names,
             numpopinit,
             iters,
     ):
         self.initscalars = initscalars
+        self.gene_names = gene_names
         self.numpopinit = numpopinit
         self.iters = iters
 

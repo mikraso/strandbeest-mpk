@@ -9,7 +9,7 @@ December 22nd, 2024
 """
 
 # imports
-
+import math
 
 def produce_linkage_path(ga, genome, divisions=32):
     """
@@ -22,27 +22,57 @@ def produce_linkage_path(ga, genome, divisions=32):
         the number of divisions of the unit circle to solve at
     :return:
     """
+
+    # rework genome to be a dictionary
+    gnm = {ga.gene_names[iii]: gene for iii, gene in enumerate(genome)}
     # checks
+    hyp = ((gnm['a']**2) + (gnm['l']**2))**0.5
+
     # triangle bde
-    if (genome['b'] + genome['d'] < genome['e']) or \
-        (genome['d'] + genome['e'] < genome['b']) or \
-        (genome['b'] + genome['e'] < genome['d']):
+    if (gnm['b'] + gnm['d'] < gnm['e']) or \
+        (gnm['d'] + gnm['e'] < gnm['b']) or \
+        (gnm['b'] + gnm['e'] < gnm['d']):
         return ga.fail_value
 
     # triangle ghi
-    if (genome['g'] + genome['h'] < genome['i']) or \
-        (genome['h'] + genome['i'] < genome['g']) or \
-        (genome['g'] + genome['i'] < genome['h']):
+    if (gnm['g'] + gnm['h'] < gnm['i']) or \
+        (gnm['h'] + gnm['i'] < gnm['g']) or \
+        (gnm['g'] + gnm['i'] < gnm['h']):
         return ga.fail_value
 
-    # j + k must be larger than b + c
-    
-    # additional checks observed from the mechanism?
+    # b + j must be larger than hyp + m
+    if (gnm['b'] + gnm['j']) < (hyp + gnm['m']):
+        return ga.fail_value
 
+    # c + k must be larger than hyp + m
+    if (gnm['c'] + gnm['k']) < (hyp + gnm['m']):
+        return ga.fail_value
 
-    # starting coordinates (unit circle origin)
-    m_coords = [(0,0),                         (genome['m'],0)]  # need to functionalize second coords
-    l_coords = [(0,0),                         (0,0-genome['l'])]
-    a_coords = [(0-genome['a'],0-genome['l']), (0,0-genome['l'])]
+    # loop through the angles at which the geometry will be solved and solve
+    delta_theta = 2 * math.pi / divisions
+    tht = 0
+    soln_pts = []
+    while tht < (2 * math.pi):
+
+        # calculate coordinates
+        m_coords = [(0,0),                      (gnm['m']*math.cos(tht), gnm['m']*math.sin(tht))]
+        l_coords = [(0,0),                      (0,0-gnm['l'])]
+        a_coords = [(0-gnm['a'],0-gnm['l']),    (0,0-gnm['l'])]
+        j_coords = [(xxx, yyy),                 m_coords[1]]
+        k_coords = [(xxx, yyy),                 m_coords[1]]
+        b_coords = [((0-gnm['a'], 0-gnm['l'])), (xxx, yyy)]
+        c_coords = [((0-gnm['a'], 0-gnm['l'])), (xxx, yyy)]
+        d_coords = [((0-gnm['a'], 0-gnm['l'])), (xxx, yyy)]
+        e_coords = [(xxx, yyy),                 (xxx, yyy)]
+        f_coords = [(xxx, yyy),                 (xxx, yyy)]
+        g_coords = [(xxx, yyy),                 (xxx, yyy)]
+        h_coords = [(xxx, yyy),                 (xxx, yyy)]
+        i_coords = [(xxx, yyy),                 (xxx, yyy)]
+
+        # can it be as simple as adding to the x and y coordinates of known coordinates?
+        # i would need to know the orientation of the segment to know what direction to go
+
+        soln_pts.append((xxx, yyy))
+        tht += delta_theta
 
 

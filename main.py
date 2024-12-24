@@ -8,8 +8,13 @@ December 17th, 2024
 from modules.genetic_algorithm import geneticAlgorithm
 from modules.evaluation import *
 
+names = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'
+]
+
 ga = geneticAlgorithm(
-    initscalars=[10,10,10,10,10,10,10,10,10],
+    initscalars=[10]*len(names),
+    gene_names=names,
     numpopinit=500,
     iters=100,
 )
