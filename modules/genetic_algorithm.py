@@ -16,6 +16,7 @@ class geneticAlgorithm:
             numpopinit,
             iters,
     ):
+        
         self.initscalars = initscalars
         self.gene_names = gene_names
         self.numpopinit = numpopinit
