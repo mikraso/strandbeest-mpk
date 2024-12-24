@@ -11,6 +11,10 @@ December 22nd, 2024
 # imports
 import math
 
+def dist(v1, v2):
+
+    return (((v1[0] - v2[0])**2) + ((v1[1] - v2[1])**2))**0.5
+
 def produce_linkage_path(ga, genome, divisions=32):
     """
     The purpose of this function is to take the linkage lengths in and compute the location of the foot at a set number
@@ -50,29 +54,43 @@ def produce_linkage_path(ga, genome, divisions=32):
 
     # loop through the angles at which the geometry will be solved and solve
     delta_theta = 2 * math.pi / divisions
-    tht = 0
+    theta = 0
     soln_pts = []
-    while tht < (2 * math.pi):
+    while theta < (2 * math.pi):
 
-        # calculate coordinates
-        m_coords = [(0,0),                      (gnm['m']*math.cos(tht), gnm['m']*math.sin(tht))]
-        l_coords = [(0,0),                      (0,0-gnm['l'])]
-        a_coords = [(0-gnm['a'],0-gnm['l']),    (0,0-gnm['l'])]
-        j_coords = [(xxx, yyy),                 m_coords[1]]
-        k_coords = [(xxx, yyy),                 m_coords[1]]
-        b_coords = [((0-gnm['a'], 0-gnm['l'])), (xxx, yyy)]
-        c_coords = [((0-gnm['a'], 0-gnm['l'])), (xxx, yyy)]
-        d_coords = [((0-gnm['a'], 0-gnm['l'])), (xxx, yyy)]
-        e_coords = [(xxx, yyy),                 (xxx, yyy)]
-        f_coords = [(xxx, yyy),                 (xxx, yyy)]
-        g_coords = [(xxx, yyy),                 (xxx, yyy)]
-        h_coords = [(xxx, yyy),                 (xxx, yyy)]
-        i_coords = [(xxx, yyy),                 (xxx, yyy)]
+        # calculate angles and vectors (following https://www.youtube.com/watch?v=n-8I00R3i1U)
+        v_OA = (gnm['m'] * math.cos(theta),
+                gnm['m'] * math.sin(theta))
+        v_OB = (-gnm['a'],
+                -gnm['l'])
+        alpha = math.atan2(v_OA[1] - v_OB[1], v_OA[0] - v_OB[0])
+        beta  = math.acos(((dist(v_OA, v_OB)**2) + (gnm['b']**2) - (gnm['j']**2)) /
+                          (2 * dist(v_OA, v_OB) * gnm['b']))
+        v_OC = (-gnm['a'] + (gnm['b'] * math.cos(alpha + beta)),
+                -gnm['l'] + (gnm['b'] * math.sin(alpha + beta)))
+        gamma = math.acos(((gnm['b']**2) + (gnm['d']**2) - (gnm['e']**2)) / (2 * gnm['b'] * gnm['d']))
+        v_OD = (-gnm['a'] + (gnm['d'] * math.cos(alpha + beta + gamma)),
+                -gnm['l'] + (gnm['d'] * math.sin(alpha + beta + gamma)))
+        delta = math.acos(((dist(v_OA, v_OB)**2) + (gnm['c']**2) - (gnm['k']**2)) /
+                          (2 * dist(v_OA, v_OB) * gnm['c']))
+        v_OE = (-gnm['a'] + (gnm['c'] * math.cos(alpha - delta)),
+                -gnm['l'] + (gnm['c'] * math.sin(alpha - delta)))
+        epsilon = math.atan2(v_OD[1] - v_OE[1], v_OD[0] - v_OE[0])
+        zeta = math.acos(((dist(v_OD, v_OE)**2) + (gnm['g']**2) - (gnm['f']**2)) /
+                         (2 * dist(v_OD, v_OE) * gnm['g']))
+        v_OF = (-gnm['a'] + (gnm['c']*math.cos(alpha-delta) + (gnm['g']*math.cos(epsilon+zeta))),
+                -gnm['l'] + (gnm['c']*math.sin(alpha-delta) + (gnm['g']*math.sin(epsilon+zeta))))
+        nu_ = math.acos(((gnm['g']**2) + (gnm['i']**2) - (gnm['h']**2)) / (2*gnm['g']*gnm['i']))
+        v_OG = (-gnm['a'] + (gnm['c']*math.cos(alpha-delta) + (gnm['i']*math.cos(epsilon+zeta+nu))),
+                -gnm['l'] + (gnm['c']*math.sin(alpha-delta) + (gnm['i']*math.sin(epsilon+zeta+nu))))
+
 
         # can it be as simple as adding to the x and y coordinates of known coordinates?
         # i would need to know the orientation of the segment to know what direction to go
 
-        soln_pts.append((xxx, yyy))
-        tht += delta_theta
+        soln_pts.append(v_OG)
+
+        theta += delta_theta
 
 
+    return soln_pts
