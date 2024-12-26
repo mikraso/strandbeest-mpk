@@ -21,11 +21,14 @@ class geneticAlgorithm:
         self.gene_names = gene_names
         self.numpopinit = numpopinit
         self.iters = iters
+        self.fail_value = 1e30
 
         self.current_iter = 0
         self.continue_status = True
 
+        self.numparents = None
         self.parents = None
+        self.est = None
         self.fitfunc = None
         self.score = None
         self.mutrates = None
@@ -58,8 +61,11 @@ class geneticAlgorithm:
         self.fitfunc = fitfunc
         self.score = []
         # how flat is the bottom section?
-        for iii, genome in enumerate(self.population):
-            self.score.append(self.fitfunc(genome))
+        for iii, points in enumerate(self.est):
+            if points == self.fail_value:
+                self.score.append(self.fail_value)
+            else:
+                self.score.append(self.fitfunc(points))
 
         self.score_log.append(self.score)
 
@@ -68,14 +74,22 @@ class geneticAlgorithm:
         self.numparents = numparents
         # pick the best and keep them as parents
 
-        genome_score_pairs = []
+        score_genome_pairs = []
         for iii, genome in enumerate(self.population):
-            genome_score_pairs.append((self.score[iii], genome))
+            score_genome_pairs.append((self.score[iii], genome))
 
-        genome_score_pairs.sort()
+        for sgp in score_genome_pairs:
+            print('selection:', sgp[0])
+
+        score_genome_pairs.sort()
+        print('selection: sorted')
+
+        for sgp in score_genome_pairs:
+            print('selection:', sgp[0])
+
         self.parents = []
-        for gsp in genome_score_pairs[:self.numparents]:
-            self.parents.append(gsp[1])
+        for sgp in score_genome_pairs[:self.numparents]:
+            self.parents.append(sgp[1])
 
         self.population = self.parents.copy()
 
