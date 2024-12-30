@@ -5,8 +5,8 @@ author: mikekraso@gmail.com
 December 17th, 2024
 """
 
-# import matplotlib
-# matplotlib.use('QtAgg')
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
@@ -19,13 +19,14 @@ names = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'
 ]
 
+# use the known ideal values as a starting point for the mins and max gene ranges
 ideal = [38.0, 41.5, 39.3, 40.1, 55.8, 39.4, 36.7, 65.7, 49.0, 50.0, 61.9, 7.8, 15.0]
 gene_info = {names[iii]: [val - (val / 2), val + (val / 2)] for iii, val in enumerate(ideal)}
 
 ga = geneticAlgorithm(
     gene_info=gene_info,
     numpopinit=200,
-    iters=500,
+    iters=100,
 )
 
 divs = 128  # 320
