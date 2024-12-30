@@ -20,14 +20,15 @@ names = [
 ]
 
 ideal = [38.0, 41.5, 39.3, 40.1, 55.8, 39.4, 36.7, 65.7, 49.0, 50.0, 61.9, 7.8, 15.0]
-gene_info = {names[iii]: [val - (val / 4), val + (val / 4)] for iii, val in enumerate(ideal)}
+gene_info = {names[iii]: [val - (val / 2), val + (val / 2)] for iii, val in enumerate(ideal)}
 
 ga = geneticAlgorithm(
     gene_info=gene_info,
     numpopinit=200,
-    iters=1000,
+    iters=500,
 )
 
+divs = 128  # 320
 bests = []
 all_est = []
 while ga.continue_status:
@@ -36,7 +37,7 @@ while ga.continue_status:
 
     est = []
     for genome in ga.population:
-        pts = produce_linkage_path(ga, genome)
+        pts = produce_linkage_path(ga, genome, divisions=divs)
 
         est.append(pts)
 
@@ -94,10 +95,10 @@ plt.savefig('./figures/bests.png', dpi=600)
 import matplotlib.animation as animation
 
 i_genome = [38.0, 41.5, 39.3, 40.1, 55.8, 39.4, 36.7, 65.7, 49.0, 50.0, 61.9, 7.8, 15.0]
-i_points, i_links = produce_linkage_path(ga, i_genome, return_links=True, divisions=360)
+i_points, i_links = produce_linkage_path(ga, i_genome, return_links=True, divisions=divs)
 
 e_genome = ga.parents[0]
-e_points, e_links = produce_linkage_path(ga, e_genome, return_links=True, divisions=360)
+e_points, e_links = produce_linkage_path(ga, e_genome, return_links=True, divisions=divs)
 
 fig, ax = plt.subplots(1, 1)
 ax.set_aspect('equal')
@@ -135,7 +136,7 @@ ani = animation.FuncAnimation(fig=fig, func=update, frames=len(i_points), interv
 
 print('writing gif')
 writergif = animation.PillowWriter(fps=30)
-ani.save('test.gif',writer=writergif)
+ani.save('./figures/animation.gif',writer=writergif)
 
 print('done')
 
