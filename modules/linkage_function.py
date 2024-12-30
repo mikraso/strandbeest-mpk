@@ -11,11 +11,13 @@ December 22nd, 2024
 # imports
 import math
 
+from modules.evaluation import find_high_low_portion
+
 def dist(v1, v2):
 
     return (((v1[0] - v2[0])**2) + ((v1[1] - v2[1])**2))**0.5
 
-def produce_linkage_path(ga, genome, divisions=32):
+def produce_linkage_path(ga, genome, divisions=64, return_links=False):
     """
     The purpose of this function is to take the linkage lengths in and compute the location of the foot at a set number
     of angles. These locations define the path of the foot and are returned by the function
@@ -32,33 +34,34 @@ def produce_linkage_path(ga, genome, divisions=32):
     # checks
     hyp = ((gnm['a']**2) + (gnm['l']**2))**0.5
 
-    # # triangle bde
-    # if (gnm['b'] + gnm['d'] < gnm['e']) or \
-    #     (gnm['d'] + gnm['e'] < gnm['b']) or \
-    #     (gnm['b'] + gnm['e'] < gnm['d']):
-    #     return ga.fail_value
-    #
-    # # triangle ghi
-    # if (gnm['g'] + gnm['h'] < gnm['i']) or \
-    #     (gnm['h'] + gnm['i'] < gnm['g']) or \
-    #     (gnm['g'] + gnm['i'] < gnm['h']):
-    #     return ga.fail_value
-    #
-    # # b + j must be larger than hyp + m
-    # if (gnm['b'] + gnm['j']) < (hyp + gnm['m']):
-    #     return ga.fail_value
-    #
-    # # c + k must be larger than hyp + m
-    # if (gnm['c'] + gnm['k']) < (hyp + gnm['m']):
-    #     return ga.fail_value
+    # triangle bde
+    if (gnm['b'] + gnm['d'] < gnm['e']) or \
+        (gnm['d'] + gnm['e'] < gnm['b']) or \
+        (gnm['b'] + gnm['e'] < gnm['d']):
+        return ga.fail_value
+
+    # triangle ghi
+    if (gnm['g'] + gnm['h'] < gnm['i']) or \
+        (gnm['h'] + gnm['i'] < gnm['g']) or \
+        (gnm['g'] + gnm['i'] < gnm['h']):
+        return ga.fail_value
+
+    # b + j must be larger than hyp + m
+    if (gnm['b'] + gnm['j']) < (hyp + gnm['m']):
+        return ga.fail_value
+
+    # c + k must be larger than hyp + m
+    if (gnm['c'] + gnm['k']) < (hyp + gnm['m']):
+        return ga.fail_value
 
     # loop through the angles at which the geometry will be solved and solve
     delta_theta = 2 * math.pi / divisions
     theta = 0
     soln_pts = []
-    while theta < (2 * math.pi):
-
-        try:
+    try:
+        linkages = []
+        while theta < ((2 + 1/divisions) * math.pi):
+            linkages.append(([], []))
             # calculate angles and vectors (following https://www.youtube.com/watch?v=n-8I00R3i1U)
             v_OA = (gnm['m'] * math.cos(theta),
                     gnm['m'] * math.sin(theta))
@@ -84,27 +87,110 @@ def produce_linkage_path(ga, genome, divisions=32):
             nu_ = math.acos(((gnm['g']**2) + (gnm['i']**2) - (gnm['h']**2)) / (2*gnm['g']*gnm['i']))
             v_OG = (-gnm['a'] + (gnm['c']*math.cos(alpha-delta) + (gnm['i']*math.cos(epsilon+zeta+nu_))),
                     -gnm['l'] + (gnm['c']*math.sin(alpha-delta) + (gnm['i']*math.sin(epsilon+zeta+nu_))))
-        except Exception as e:
 
-            if hasattr(e, 'message'):
-                print(e.message)
-            else:
-                print(e)
+            soln_pts.append(v_OG)
+            linkages[-1][0].append(0)
+            linkages[-1][1].append(0)
+            linkages[-1][0].append(v_OA[0])
+            linkages[-1][1].append(v_OA[1])
+            linkages[-1][0].append(v_OC[0])
+            linkages[-1][1].append(v_OC[1])
+            linkages[-1][0].append(v_OD[0])
+            linkages[-1][1].append(v_OD[1])
+            linkages[-1][0].append(v_OF[0])
+            linkages[-1][1].append(v_OF[1])
+            linkages[-1][0].append(v_OG[0])
+            linkages[-1][1].append(v_OG[1])
+            linkages[-1][0].append(v_OE[0])
+            linkages[-1][1].append(v_OE[1])
+            linkages[-1][0].append(v_OF[0])
+            linkages[-1][1].append(v_OF[1])
+            linkages[-1][0].append(v_OE[0])
+            linkages[-1][1].append(v_OE[1])
+            linkages[-1][0].append(v_OB[0])
+            linkages[-1][1].append(v_OB[1])
+            linkages[-1][0].append(v_OD[0])
+            linkages[-1][1].append(v_OD[1])
+            linkages[-1][0].append(v_OB[0])
+            linkages[-1][1].append(v_OB[1])
+            linkages[-1][0].append(v_OC[0])
+            linkages[-1][1].append(v_OC[1])
+            linkages[-1][0].append(v_OA[0])
+            linkages[-1][1].append(v_OA[1])
+            linkages[-1][0].append(v_OE[0])
+            linkages[-1][1].append(v_OE[1])
 
+            theta += delta_theta
+
+    except Exception as e:
+
+        # if hasattr(e, 'message'):
+        #     print(e.message)
+        # else:
+        #     print(e)
+
+        return ga.fail_value
+
+    # # check for lowest not being laterally sequential
+    # temp_pts = soln_pts.copy()
+    # lows = find_high_low_portion(temp_pts)
+    #
+    # lows.sort()
+    #
+    # sequence = []
+    # for iii, lll in enumerate(lows[:-1]):
+    #     if lll[1] > lows[iii+1][1]:
+    #         sequence.append(0)
+    #     else:
+    #         sequence.append(1)
+    #
+    # counter = 0
+    # for iii, sss in enumerate(sequence[:-1]):
+    #     if sss != sequence[iii+1]:
+    #         counter += 1
+    #
+    # if counter > 1:
+    #     return ga.fail_value
+    #
+
+    # check for highest not having multiple concavity flips
+    temp_pts = soln_pts.copy()
+
+    highs = find_high_low_portion(temp_pts, highlow='high', proportion=4)
+
+    highs.sort()
+
+    sequence = []
+    for iii, hhh in enumerate(highs[:-1]):
+
+        if hhh[1] > 0:
             return ga.fail_value
 
-        # can it be as simple as adding to the x and y coordinates of known coordinates?
-        # i would need to know the orientation of the segment to know what direction to go
+        if hhh[1] < highs[iii + 1][1]:
+            sequence.append(0)
+        else:
+            sequence.append(1)
 
-        soln_pts.append(v_OG)
+    counter = 0
+    for iii, sss in enumerate(sequence[:-1]):
+        if iii == 0:
+            if sss != 0:
+                return ga.fail_value
+        if sss != sequence[iii + 1]:
+            counter += 1
 
-        theta += delta_theta
+    if counter != 1:
+        return ga.fail_value
 
+    if return_links:
+        return soln_pts, linkages
+    else:
+        return soln_pts
 
-    return soln_pts
 
 if __name__ == '__main__':
 
+    import matplotlib.pyplot as plt
     from genetic_algorithm import geneticAlgorithm
 
     names = [
@@ -119,6 +205,16 @@ if __name__ == '__main__':
     )
     genome = [38.0, 41.5, 39.3, 40.1, 55.8, 39.4, 36.7, 65.7, 49.0, 50.0, 61.9, 7.8, 15.0]
     points = produce_linkage_path(ga, genome)
+
+    fig, ax = plt.subplots(1, 1)
+
+    xxx, yyy = zip(*points)
+
+    ax.plot(xxx, yyy, markersize=0.4)
+    # ax.scatter(xxx, yyy, markersize=0.4)
+
+    ax.set_aspect('equal')
+    plt.savefig('../figures/ideal.png', dpi=600)
 
 
 

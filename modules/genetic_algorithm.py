@@ -11,14 +11,13 @@ class geneticAlgorithm:
 
     def __init__(
             self,
-            initscalars,
-            gene_names,
+            gene_info,
             numpopinit,
             iters,
     ):
-        
-        self.initscalars = initscalars
-        self.gene_names = gene_names
+
+        self.gene_info = gene_info
+        self.gene_names = list(gene_info.keys())
         self.numpopinit = numpopinit
         self.iters = iters
         self.fail_value = 1e30
@@ -44,14 +43,15 @@ class geneticAlgorithm:
             number_to_produce = self.numpopinit
 
         if scalars is None:
-            scalars = self.initscalars
+            scalars = self.gene_info
 
         genomes = []
         for iii in range(number_to_produce):
             genome = []
-            for genescale in scalars:
-                genome.append(random.random() * genescale)
-
+            for key in scalars.keys():
+                gene_range = scalars[key][1] - scalars[key][0]
+                genome.append(scalars[key][0] + (random.random() * gene_range))
+                
             genomes.append(genome)
 
         return genomes
@@ -78,17 +78,11 @@ class geneticAlgorithm:
         for iii, genome in enumerate(self.population):
             score_genome_pairs.append((self.score[iii], genome))
 
-        for sgp in score_genome_pairs:
-            print('selection:', sgp[0])
-
         score_genome_pairs.sort()
-        print('selection: sorted')
-
-        for sgp in score_genome_pairs:
-            print('selection:', sgp[0])
 
         self.parents = []
         for sgp in score_genome_pairs[:self.numparents]:
+
             self.parents.append(sgp[1])
 
         self.population = self.parents.copy()
@@ -135,14 +129,15 @@ class geneticAlgorithm:
             mrates = mrates * random.random()
 
         elif isinstance(mrates, list):
-
             # annealing
-            iters_per_step = int(self.iters / len(mrates))
-            for iii in range(self.iters):
-                print('here is where you interpolate')
+            diff = mrates[0] - mrates[1]
+            diff_per_iter = diff / self.iters
+
+            mrates = (diff_per_iter * self.current_iter) + mrates[1]
 
         mut_pop = []
-        for genome in self.population:
+        subpop = self.population[self.numparents:]
+        for genome in subpop:
             for mmm in range(nummutations):
                 midx = random.choice(range(len(genome)))
                 msign = random.choice([-1, 1])
@@ -151,9 +146,9 @@ class geneticAlgorithm:
 
             mut_pop.append(genome)
 
-        self.population = self.parents + mut_pop
+        self.population = self.parents.copy() + mut_pop.copy()
 
-        if self.current_iter >= self.iters -1 :
+        if self.current_iter >= self.iters - 1:
             self.continue_status = False
 
         self.current_iter += 1
