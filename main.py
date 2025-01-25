@@ -15,18 +15,19 @@ from modules.genetic_algorithm import geneticAlgorithm
 from modules.evaluation import evaluation
 from modules.linkage_function import produce_linkage_path
 
+# all linkages except 'l'
 names = [
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm'
 ]
 
 # use the known ideal values as a starting point for the mins and max gene ranges
-ideal = [38.0, 41.5, 39.3, 40.1, 55.8, 39.4, 36.7, 65.7, 49.0, 50.0, 61.9, 7.8, 15.0]
-gene_info = {names[iii]: [val - (val / 2), val + (val / 2)] for iii, val in enumerate(ideal)}
+ideal = [38.0, 41.5, 39.3, 40.1, 55.8, 39.4, 36.7, 65.7, 49.0, 50.0, 61.9, 15.0]
+gene_info = {names[iii]: [val - (val / 4), val + (val / 4)] for iii, val in enumerate(ideal)}
 
 ga = geneticAlgorithm(
     gene_info=gene_info,
-    numpopinit=200,
-    iters=100,
+    numpopinit=500,
+    iters=500,
 )
 
 divs = 128  # 320
@@ -51,13 +52,13 @@ while ga.continue_status:
     bests.append(ga.est[np.where(ga.score == np.min(ga.score))[0][0]])
 
     print('starting selection...')
-    ga.selection(numparents=20)
+    ga.selection(numparents=50)
 
     print('starting crossover...')
     ga.crossover(numchild=2, numcrosspts=4)
 
     print('starting mutation...')
-    ga.mutation(mrates=0.8, nummutations=2)  # [0.1, 0.05, 0.01, 0.005, 0.001])
+    ga.mutation(mrates=0.8, nummutations=8)  # [0.1, 0.05, 0.01, 0.005, 0.001])
 
     print('mpk: best score:', min(ga.score))
 
@@ -95,7 +96,7 @@ plt.savefig('./figures/bests.png', dpi=600)
 
 import matplotlib.animation as animation
 
-i_genome = [38.0, 41.5, 39.3, 40.1, 55.8, 39.4, 36.7, 65.7, 49.0, 50.0, 61.9, 7.8, 15.0]
+i_genome = [38.0, 41.5, 39.3, 40.1, 55.8, 39.4, 36.7, 65.7, 49.0, 50.0, 61.9, 15.0]  # 'l' is fixed qt 7.8
 i_points, i_links = produce_linkage_path(ga, i_genome, return_links=True, divisions=divs)
 
 e_genome = ga.parents[0]

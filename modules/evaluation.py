@@ -74,10 +74,12 @@ def evaluation(points):
         if pnt[1] > avg_y:
             counter += 1
 
-    ud_ratio = 2 * counter / (len(temp_pts) - counter)
+    ud_ratio = counter / (len(temp_pts) - counter)
 
     # we know we want a flat bottom so check how flat the lowest portion of points is
     lows = find_high_low_portion(temp_pts, proportion=2.25)
+
+    length = max([pnt[0] for pnt in lows]) - min([pnt[0] for pnt in lows])
 
     # with the lowest points identified, now test to see how tightly gathered to the mean they are (flatness)
     y_vals = []
@@ -96,6 +98,11 @@ def evaluation(points):
 
     mean_norm_abs_error = sum(normalized_abs_error) / len(normalized_abs_error)
 
-    return mean_norm_abs_error * ud_ratio  # / area
+    # if ud_ratio > 1:
+    #     return mean_norm_abs_error * ud_ratio  # / area
+    #
+    # else:
+    length_counteractor = 40
+    return mean_norm_abs_error * (ud_ratio**2) * (length_counteractor / length)
 
 

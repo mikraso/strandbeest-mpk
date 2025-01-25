@@ -31,6 +31,10 @@ def produce_linkage_path(ga, genome, divisions=64, return_links=False):
 
     # rework genome to be a dictionary
     gnm = {ga.gene_names[iii]: gene for iii, gene in enumerate(genome)}
+
+    # add fixed value for 'l'
+    gnm['l'] = 7.8
+
     # checks
     hyp = ((gnm['a']**2) + (gnm['l']**2))**0.5
 
